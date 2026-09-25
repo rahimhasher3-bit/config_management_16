@@ -1,2 +1,2 @@
 @echo off
-python src\emulator.py
+python src\emulator.py %*

@@ -1,6 +1,9 @@
+import io
 import os
 import sys
+import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 
@@ -27,9 +30,55 @@ class TestEmulator(unittest.TestCase):
         )
 
     def test_exit(self):
-        self.assertFalse(
-            emulator.execute_command(["exit"])
+        self.assertEqual(
+            emulator.execute_command(["exit"]),
+            "exit"
         )
+
+    def test_vfs_name(self):
+        self.assertEqual(
+            emulator.get_vfs_name("test_vfs.zip"),
+            "test_vfs"
+        )
+
+    def test_unknown_command(self):
+        self.assertEqual(
+            emulator.execute_command(["hello"]),
+            "error"
+        )
+
+    def test_startup_script_stops_on_error(self):
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            delete=False
+        ) as file:
+            file.write("ls\n")
+            file.write("hello\n")
+            file.write("ls after_error\n")
+            script_path = file.name
+
+        try:
+            output = io.StringIO()
+
+            with redirect_stdout(output):
+                result = emulator.run_startup_script(
+                    script_path,
+                    "test_vfs"
+                )
+
+            text = output.getvalue()
+
+            self.assertEqual(result, "error")
+            self.assertIn("hello", text)
+            self.assertIn(
+                "Стартовый скрипт остановлен.",
+                text
+            )
+            self.assertNotIn("ls after_error", text)
+
+        finally:
+            os.remove(script_path)
 
 
 if __name__ == "__main__":
