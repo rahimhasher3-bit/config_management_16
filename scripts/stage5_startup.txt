@@ -1,0 +1,12 @@
+ls
+date
+cal
+chmod 600 level1/file1.txt
+chmod 700 level1
+cd level1
+ls
+chmod 640 file1.txt
+cd level2
+ls
+cd ..
+chmod 999 file1.txt

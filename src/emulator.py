@@ -144,13 +144,46 @@ def command_cal(args):
     return True
 
 
+def command_chmod(args, vfs, state):
+    if vfs is None:
+        print("Ошибка: VFS не загружена")
+        return False
+
+    if len(args) != 2:
+        print(
+            "Ошибка: chmod требует режим и путь"
+        )
+        return False
+
+    mode = args[0]
+    path = args[1]
+
+    try:
+        vfs.chmod(
+            path,
+            mode,
+            state["cwd"]
+        )
+
+        return True
+
+    except (
+        ValueError,
+        FileNotFoundError
+    ) as error:
+        print(f"Ошибка: {error}")
+        return False
+
+
 def execute_command(
     parts,
     vfs=None,
     state=None
 ):
     if state is None:
-        state = {"cwd": "/"}
+        state = {
+            "cwd": "/"
+        }
 
     if not parts:
         return "continue"
@@ -159,23 +192,45 @@ def execute_command(
     args = parts[1:]
 
     if command == "ls":
-        if command_ls(args, vfs, state):
+        if command_ls(
+            args,
+            vfs,
+            state
+        ):
             return "continue"
+
         return "error"
 
     if command == "cd":
-        if command_cd(args, vfs, state):
+        if command_cd(
+            args,
+            vfs,
+            state
+        ):
             return "continue"
+
         return "error"
 
     if command == "date":
         if command_date(args):
             return "continue"
+
         return "error"
 
     if command == "cal":
         if command_cal(args):
             return "continue"
+
+        return "error"
+
+    if command == "chmod":
+        if command_chmod(
+            args,
+            vfs,
+            state
+        ):
+            return "continue"
+
         return "error"
 
     if command == "exit":
@@ -184,6 +239,7 @@ def execute_command(
     print(
         f"Ошибка: неизвестная команда '{command}'"
     )
+
     return "error"
 
 
@@ -192,12 +248,23 @@ def load_vfs(vfs_path):
         return None
 
     try:
-        vfs = VirtualFileSystem(vfs_path)
+        vfs = VirtualFileSystem(
+            vfs_path
+        )
+
         vfs.load()
+
         return vfs
 
-    except (FileNotFoundError, ValueError) as error:
-        print(f"Ошибка загрузки VFS: {error}")
+    except (
+        FileNotFoundError,
+        ValueError
+    ) as error:
+
+        print(
+            f"Ошибка загрузки VFS: {error}"
+        )
+
         return None
 
 
@@ -226,6 +293,7 @@ def run_startup_script(
             script_path,
             encoding="utf-8"
         ) as script_file:
+
             lines = script_file.readlines()
 
     except OSError as error:
@@ -233,6 +301,7 @@ def run_startup_script(
             f"Ошибка чтения стартового скрипта: "
             f"{error}"
         )
+
         return "error"
 
     for line in lines:
@@ -246,10 +315,15 @@ def run_startup_script(
             f"{command_line}"
         )
 
-        parts = parse_command(command_line)
+        parts = parse_command(
+            command_line
+        )
 
         if parts is None:
-            print("Стартовый скрипт остановлен.")
+            print(
+                "Стартовый скрипт остановлен."
+            )
+
             return "error"
 
         result = execute_command(
@@ -259,7 +333,10 @@ def run_startup_script(
         )
 
         if result == "error":
-            print("Стартовый скрипт остановлен.")
+            print(
+                "Стартовый скрипт остановлен."
+            )
+
             return "error"
 
         if result == "exit":
@@ -289,7 +366,10 @@ def parse_arguments():
 
 
 def print_configuration(args):
-    print("Параметры запуска:")
+    print(
+        "Параметры запуска:"
+    )
+
     print(
         f"VFS: "
         f"{args.vfs_path or 'не задан'}"
@@ -306,8 +386,13 @@ def run_repl(
     vfs,
     state
 ):
-    print("Эмулятор оболочки ОС")
-    print("Для выхода введите: exit")
+    print(
+        "Эмулятор оболочки ОС"
+    )
+
+    print(
+        "Для выхода введите: exit"
+    )
 
     while True:
         try:
@@ -318,7 +403,9 @@ def run_repl(
                 )
             )
 
-            parts = parse_command(user_input)
+            parts = parse_command(
+                user_input
+            )
 
             if parts is None:
                 continue
@@ -348,9 +435,14 @@ def main():
 
     print_configuration(args)
 
-    vfs = load_vfs(args.vfs_path)
+    vfs = load_vfs(
+        args.vfs_path
+    )
 
-    if args.vfs_path and vfs is None:
+    if (
+        args.vfs_path
+        and vfs is None
+    ):
         return
 
     if vfs:

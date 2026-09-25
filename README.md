@@ -96,3 +96,16 @@ run.bat --vfs vfs_samples/deep_vfs.zip --script scripts/stage3_startup.txt
 
 ```text
 cd ..
+## Этап 5. chmod
+
+На пятом этапе реализована команда `chmod`.
+
+Команда изменяет права доступа файлов и каталогов виртуальной файловой системы.
+
+Изменения выполняются только в памяти и не изменяют исходный ZIP-архив VFS.
+
+Примеры:
+
+```text
+chmod 600 level1/file1.txt
+chmod 700 level1
