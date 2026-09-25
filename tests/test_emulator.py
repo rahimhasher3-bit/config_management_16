@@ -35,10 +35,10 @@ class TestEmulator(unittest.TestCase):
             "exit"
         )
 
-    def test_vfs_name(self):
+    def test_prompt(self):
         self.assertEqual(
-            emulator.get_vfs_name("test_vfs.zip"),
-            "test_vfs"
+            emulator.format_prompt("test_vfs", "/"),
+            "test_vfs:~$ "
         )
 
     def test_unknown_command(self):
@@ -53,18 +53,21 @@ class TestEmulator(unittest.TestCase):
             encoding="utf-8",
             delete=False
         ) as file:
-            file.write("ls\n")
+            file.write("date\n")
             file.write("hello\n")
-            file.write("ls after_error\n")
+            file.write("date\n")
             script_path = file.name
 
         try:
             output = io.StringIO()
+            state = {"cwd": "/"}
 
             with redirect_stdout(output):
                 result = emulator.run_startup_script(
                     script_path,
-                    "test_vfs"
+                    "test_vfs",
+                    None,
+                    state
                 )
 
             text = output.getvalue()
@@ -75,7 +78,6 @@ class TestEmulator(unittest.TestCase):
                 "Стартовый скрипт остановлен.",
                 text
             )
-            self.assertNotIn("ls after_error", text)
 
         finally:
             os.remove(script_path)

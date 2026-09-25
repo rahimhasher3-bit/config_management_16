@@ -1,0 +1,11 @@
+ls
+cd level1
+ls
+cd level2
+ls
+cd ..
+date
+cal
+cal 2026
+cal 9 2026
+cd missing_folder
