@@ -3,6 +3,8 @@ import os
 import shlex
 from pathlib import Path
 
+from vfs import VirtualFileSystem
+
 
 DEFAULT_VFS_NAME = "my_vfs"
 
@@ -54,10 +56,39 @@ def get_vfs_name(vfs_path):
     return Path(vfs_path).stem
 
 
+def load_vfs(vfs_path):
+    if not vfs_path:
+        return None
+
+    try:
+        vfs = VirtualFileSystem(vfs_path)
+        vfs.load()
+        return vfs
+
+    except (FileNotFoundError, ValueError) as error:
+        print(f"Ошибка загрузки VFS: {error}")
+        return None
+
+
+def show_motd(vfs):
+    if vfs is None:
+        return
+
+    motd = vfs.get_motd()
+
+    if motd:
+        print()
+        print("----- MOTD -----")
+        print(motd)
+        print("----------------")
+        print()
+
+
 def run_startup_script(script_path, vfs_name):
     try:
         with open(script_path, encoding="utf-8") as script_file:
             lines = script_file.readlines()
+
     except OSError as error:
         print(f"Ошибка чтения стартового скрипта: {error}")
         return "error"
@@ -96,7 +127,7 @@ def parse_arguments():
     parser.add_argument(
         "--vfs",
         dest="vfs_path",
-        help="Путь к физическому расположению VFS"
+        help="Путь к ZIP-архиву VFS"
     )
 
     parser.add_argument(
@@ -144,9 +175,20 @@ def run_repl(vfs_name):
 
 def main():
     args = parse_arguments()
-    vfs_name = get_vfs_name(args.vfs_path)
 
     print_configuration(args)
+
+    vfs = load_vfs(args.vfs_path)
+
+    if args.vfs_path and vfs is None:
+        return
+
+    if vfs:
+        vfs_name = vfs.name
+    else:
+        vfs_name = DEFAULT_VFS_NAME
+
+    show_motd(vfs)
 
     if args.script_path:
         result = run_startup_script(

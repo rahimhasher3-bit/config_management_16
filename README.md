@@ -51,3 +51,33 @@ run.bat
 
 ```bash
 run.bat --vfs test_vfs.zip --script scripts/startup_test.txt
+## Этап 3. VFS
+
+На третьем этапе подключена виртуальная файловая система.
+
+Источник VFS — ZIP-архив.
+
+Все данные загружаются и обрабатываются в памяти без распаковки архива на диск.
+
+Для хранения двоичных данных используется Base64.
+
+Поддерживается файл `motd` в корне VFS.
+Если файл существует, его содержимое выводится при запуске эмулятора.
+
+Для тестирования созданы разные варианты VFS:
+
+- `vfs_samples/test_vfs.zip` — минимальный VFS;
+- `vfs_samples/multi_vfs.zip` — VFS с несколькими файлами;
+- `vfs_samples/deep_vfs.zip` — VFS с тремя уровнями каталогов.
+
+Также созданы тестовые скрипты:
+
+- `scripts/test_min_vfs.bat`
+- `scripts/test_multi_vfs.bat`
+- `scripts/test_deep_vfs.bat`
+- `scripts/stage3_startup.txt`
+
+### Пример запуска
+
+```bash
+run.bat --vfs vfs_samples/deep_vfs.zip --script scripts/stage3_startup.txt
